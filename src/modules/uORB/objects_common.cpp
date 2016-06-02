@@ -22,13 +22,13 @@ ORB_DEFINE(sensor_gyro, struct sensor_gyro_s);
 
 #include "topics/sensor_baro.h"
 ORB_DEFINE(sensor_baro, struct sensor_baro_s);
-//
-//#include "topics/output_pwm.h"
-//ORB_DEFINE(output_pwm, struct output_pwm_s);
-//
-//#include "topics/input_rc.h"
-//ORB_DEFINE(input_rc, struct input_rc_s);
-//
+
+#include "topics/output_pwm.h"
+ORB_DEFINE(output_pwm, struct output_pwm_s);
+
+#include "topics/input_rc.h"
+ORB_DEFINE(input_rc, struct input_rc_s);
+
 //#include "topics/pwm_input.h"
 //ORB_DEFINE(pwm_input, struct pwm_input_s);
 //

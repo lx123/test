@@ -53,7 +53,7 @@ static volatile uint8_t msg_next_out, msg_next_in;  //消息下一个输出，�
  * 警告：在处理混空时会消耗大量的缓冲器，不要申请超过80字节用于输出
  */
 #define NUM_MSG 1
-static char msg[NUM_MSG][40];//消息组
+static char msg[NUM_MSG][40];//消息组,40个字节
 
 static void heartbeat_blink(void);//心跳闪灯
 static void ring_blink(void);//声音
@@ -84,15 +84,15 @@ isr_debug(uint8_t level, const char *fmt, ...)
 static void
 show_debug_messages(void)
 {
-	if (msg_counter != last_msg_counter) {
-		uint32_t n = msg_counter - last_msg_counter;
+	if (msg_counter != last_msg_counter) {  //有新的消息加入
+		uint32_t n = msg_counter - last_msg_counter;  //新消息个数
 
 		if (n > NUM_MSG) { n = NUM_MSG; }
 
-		last_msg_counter = msg_counter;
+		last_msg_counter = msg_counter;  //更新消息个数
 
 		while (n--) {
-			debug("%s", msg[msg_next_out]);
+//			debug("%s", msg[msg_next_out]);  //输出debug消息
 			msg_next_out = (msg_next_out + 1) % NUM_MSG;
 		}
 	}
@@ -102,11 +102,11 @@ static void
 heartbeat_blink(void)//心跳灯
 {
 	static bool heartbeat = false;
-	LED_BLUE(heartbeat = !heartbeat);  //蓝色为心跳，
+	LED_BLUE(heartbeat = !heartbeat);  //蓝色为心跳，每调用一次取反
 }
 
 static void
-ring_blink(void)
+ring_blink(void)  //环形闪灯
 {
 //#ifdef GPIO_LED4
 //
@@ -177,10 +177,10 @@ void schedule_reboot(uint32_t time_delta_usec)
 /**
    check for a scheduled reboot  在主程序中调用
  */
-static void check_reboot(void)
+static void check_reboot(void)  //主程序中不断轮询
 {
 	if (reboot_time != 0 && hrt_absolute_time() > reboot_time) {
-        up_systemreset();//上位系统重置？？
+        up_systemreset();//重启芯片
 	}
 }
 //计算固件的crc，判断是否需要升级固件
@@ -225,12 +225,12 @@ user_start(int argc, char *argv[])  //主入口
      * a DMA event.
      * 1ms间隔轮询接收数据，如果没有dma事件触发
 	 */
-#ifdef CONFIG_ARCH_DMA  //系统中定义
+#ifdef CONFIG_ARCH_DMA  //系统中定义，nuttx中设置
 	hrt_call_every(&serial_dma_call, 1000, 1000, (hrt_callout)stm32_serial_dma_poll, NULL);  //轮询串口 线程2，dma轮询 1000hz
 #endif
 
     /* print some startup info */  //打印一些启动信息，io模块启动
-	lowsyslog("\nPX4IO: starting\n");
+//	lowsyslog("\nPX4IO: starting\n");
 
 	/* default all the LEDs to off while we start */
 	LED_AMBER(false); //关闭琥珀led
@@ -263,16 +263,16 @@ user_start(int argc, char *argv[])  //主入口
     interface_init(); //开启与fmu的接口，串口2dma自动处理 线程2,串口dma轮询
 
     /* add a performance counter for mixing */  //添加一个混控执行计数，测量消耗的时间
-	perf_counter_t mixer_perf = perf_alloc(PC_ELAPSED, "mix");
+	perf_counter_t mixer_perf = perf_alloc(PC_ELAPSED, "mix");  //测量混控时间花销
 
 	/* add a performance counter for controls */  //控制性能计数
 	perf_counter_t controls_perf = perf_alloc(PC_ELAPSED, "controls");
 
-    /* and one for measuring the loop rate */  //测量两次事件的间隔
+    /* and one for measuring the loop rate */  //测量两次测量循环时间间隔，也就是测量的频率
 	perf_counter_t loop_perf = perf_alloc(PC_INTERVAL, "loop");
 
     struct mallinfo minfo = mallinfo();//内存调用信息
-	lowsyslog("MEM: free %u, largest %u\n", minfo.mxordblk, minfo.fordblks);
+//	lowsyslog("MEM: free %u, largest %u\n", minfo.mxordblk, minfo.fordblks);
 
     /* initialize PWM limit lib */  //pwm限制
 	pwm_limit_init(&pwm_limit);
@@ -292,7 +292,7 @@ user_start(int argc, char *argv[])  //主入口
 	 */
     if (minfo.mxordblk < 600) { //内存信息，可用内存小于600
 
-        lowsyslog("ERR: not enough MEM"); //没有足够的内存
+//        lowsyslog("ERR: not enough MEM"); //没有足够的内存
 		bool phase = false;
 
         while (true) { //琥珀色的灯和蓝色的交互闪烁，死循环
@@ -313,7 +313,7 @@ user_start(int argc, char *argv[])  //主入口
 	}
 
 	/* Start the failsafe led init */
-    failsafe_led_init(); //失效保护led  线程3，失效保护8hz
+    failsafe_led_init(); //失效保护led  线程3，失效保护8hz，琥珀色led
 
 	/*
 	 * Run everything in a tight loop.  在一个紧凑的循环中运行一切
@@ -350,9 +350,9 @@ user_start(int argc, char *argv[])  //主入口
 		show_debug_messages();   //检查debug是否活动
 
 		/* post debug state at ~1Hz - this is via an auxiliary serial port
-		 * DEFAULTS TO OFF!
+		 * DEFAULTS TO OFF每隔1Hz抛出debug状态，通过辅助串口，默认关闭
 		 */
-		if (hrt_absolute_time() - last_debug_time > (1000 * 1000)) {
+		if (hrt_absolute_time() - last_debug_time > (1000 * 1000)) { //1hz
 
 			isr_debug(1, "d:%u s=0x%x a=0x%x f=0x%x m=%u",
 				  (unsigned)r_page_setup[PX4IO_P_SETUP_SET_DEBUG],

@@ -153,3 +153,4 @@ failsafe_blink(void *arg)  //失效保护闪灯
 
 	LED_AMBER(failsafe);  //依次按编码亮灯
 }
+

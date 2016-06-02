@@ -18,6 +18,8 @@
 #include <unistd.h>
 #include <math.h>
 
+#include <nuttx/float.h>
+
 #include <iofirmware/protocol.h>
 
 #include "mixer.h"

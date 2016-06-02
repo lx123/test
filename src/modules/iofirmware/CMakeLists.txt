@@ -11,7 +11,7 @@ set(cxx_flags)
 set(include_dirs)
 set(link_dirs)
 set(definitions)
-#预编译
+#预编译,生成nuttx-export
 px4_os_prebuild_targets(OUT io_prebuild_targets
 	BOARD ${config_io_board}
 	THREADS ${THREADS})
@@ -40,7 +40,7 @@ add_definitions(${definitions})
 set(srcs
 	adc.c
 	controls.c
-	px4io.c
+	io.c
 	registers.c
 	safety.c
 	../systemlib/up_cxxinitialize.c
@@ -58,12 +58,12 @@ set(srcs
 	../../drivers/stm32/drv_hrt.c
 	../../drivers/stm32/drv_io_timer.c
 	../../drivers/stm32/drv_pwm_servo.c
-	../../drivers/boards/${config_io_board}/px4io_init.c
-	../../drivers/boards/${config_io_board}/px4io_timer_config.c
+	../../drivers/boards/${config_io_board}/io_init.c
+	../../drivers/boards/${config_io_board}/io_timer_config.c
 	)
 
 
-if(${config_io_board} STREQUAL "px4io")
+if(${config_io_board} STREQUAL "io")
 	list(APPEND srcs
 		serial.c
 		../systemlib/hx_stream.c
@@ -77,9 +77,9 @@ add_executable(${fw_io_name}
 
 add_dependencies(${fw_io_name}
 	nuttx_export_${config_io_board}
-	msg_gen
+#	msg_gen
 	io_prebuild_targets
-	mixer_gen
+#	mixer_gen
 	)
 
 set(nuttx_export_dir ${CMAKE_BINARY_DIR}/${config_io_board}/NuttX/nuttx-export)

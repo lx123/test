@@ -365,7 +365,7 @@ static int io_timer_init_timer(unsigned timer)
 
 	if (rv == 0) {
 
-		irqstate_t flags = irqsave();
+		irqstate_t flags = up_irq_save();
 
 		set_timer_initalized(timer);
 
@@ -416,7 +416,7 @@ static int io_timer_init_timer(unsigned timer)
 
 		up_enable_irq(io_timers[timer].vectorno);
 
-		irqrestore(flags);
+		up_irq_restore(flags);
 	}
 
 	return rv;
@@ -611,7 +611,7 @@ int io_timer_set_enable(bool state, io_timer_channel_mode_t mode, io_timer_chann
 		}
 	}
 
-	irqstate_t flags = irqsave();
+	irqstate_t flags = up_irq_save();
 
 	for (int actions = 0; actions < arraySize(action_cache) && action_cache[actions].base != 0 ; actions++) {
 		uint32_t rvalue = _REG32(action_cache[actions].base, STM32_GTIM_CCER_OFFSET);
@@ -649,7 +649,7 @@ int io_timer_set_enable(bool state, io_timer_channel_mode_t mode, io_timer_chann
 		}
 	}
 
-	irqrestore(flags);
+	up_irq_restore(flags);
 
 	return 0;
 }
